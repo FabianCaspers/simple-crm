@@ -1,7 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
+import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute } from '@angular/router';
 import { getCountFromServer } from 'firebase/firestore';
+import { User } from 'src/models/user.class'
+import { DialogEditAddressComponent } from '../dialog-edit-address/dialog-edit-address.component';
+import { DialogEditUserComponent } from '../dialog-edit-user/dialog-edit-user.component';
 
 @Component({
   selector: 'app-user-detail',
@@ -11,10 +15,12 @@ import { getCountFromServer } from 'firebase/firestore';
 export class UserDetailComponent implements OnInit {
 
   userId: string | null = null;
-  user:any = {};
+  user: User = new User();
 
 
-  constructor(private route: ActivatedRoute, private firestore: AngularFirestore) { }
+  constructor(private route: ActivatedRoute, 
+    private firestore: AngularFirestore, 
+    public dialog: MatDialog) { }
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(paramMap => {
@@ -28,10 +34,23 @@ export class UserDetailComponent implements OnInit {
   getUser() {
     this.firestore
       .collection('users')
-      .doc(this.userId)
+      .doc(this.userId!)
       .valueChanges()
       .subscribe((user: any) => {
-
+        this.user = new User(user);
       })
+  }
+
+
+  editMenu() {
+    const dialog = this.dialog.open(DialogEditAddressComponent);
+    dialog.componentInstance.user = new User(this.user.toJSON());
+    dialog.componentInstance.userId = this.userId;
+  }
+
+  editUserDetail() {
+    const dialog = this.dialog.open(DialogEditUserComponent);
+    dialog.componentInstance.user = new User(this.user.toJSON());
+    dialog.componentInstance.userId = this.userId;
   }
 }
